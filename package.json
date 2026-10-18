@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "mkdir -p .vercel/output/static && cp -r index.html test.html src tests themes assets codes.json .vercel/output/static/ && echo '{\"version\": 3}' > .vercel/output/config.json",
+    "build": "mkdir -p dist && cp -r index.html test.html src tests themes assets codes.json dist/",
     "start": "node server.js",
     "check": "node scripts/validate.mjs",
     "test": "node --test src/quiz.test.mjs worker/test.mjs",
