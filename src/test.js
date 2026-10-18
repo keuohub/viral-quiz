@@ -362,7 +362,7 @@ app.addEventListener('click', (event) => {
 });
 
 Promise.all([loadAll(), themeReady])
-  .then(([tests]) => {
+  .then(async ([tests]) => {
     test = tests.find((t) => t.id === testId);
     if (!test) throw new Error('未找到该测试');
     session = ensureSession(testId);
