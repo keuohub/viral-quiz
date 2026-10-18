@@ -15,8 +15,9 @@ import {
 const params = new URLSearchParams(location.search);
 const testId = params.get('t');
 const platform = params.get('p') || 'xhs';
-// 预览用：?peek=<结果key> 直接渲染指定结果的结果页，方便调视觉时不用真的答题
-const previewResult = params.get('peek');
+const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+// 预览用：?peek=<结果key> 仅本地开发有效，线上生产环境强制拦截，防绕过
+const previewResult = isDev ? params.get('peek') : null;
 
 document.body.dataset.theme = themeOf(platform);
 document.body.dataset.test = testId;
@@ -366,10 +367,15 @@ Promise.all([loadAll(), themeReady])
     if (!test) throw new Error('未找到该测试');
     session = ensureSession(testId);
 
-    // 付款页跳回来会带 unlock 参数。解锁后立刻把它从地址里抹掉，
-    // 否则用户分享出去的链接自带这个参数，别人点开也能白看。
-    if (params.get('unlock')) {
-      unlock(testId, session, params.get('unlock'));
+    // 付款页跳回来如带 unlock 参数，必须校验其为合法激活码才放行，防止随意拼参绕过
+    const unlockVal = params.get('unlock');
+    if (unlockVal) {
+      if (unlockVal !== '1' && unlockVal !== 'true') {
+        const check = await verifyCode(unlockVal, testId);
+        if (check.ok) {
+          unlock(testId, session, unlockVal);
+        }
+      }
       history.replaceState(null, '', `${location.pathname}?t=${testId}&p=${platform}`);
     }
 
